@@ -1,0 +1,139 @@
+---
+title: "Crime statistics in Europe 2017"
+author: "Gladson Scaria "
+date: "11/10/2019"
+output: html_document
+---
+```{r global_options, include=FALSE, cache=FALSE}
+library(knitr)
+opts_chunk$set(echo = TRUE, 
+               warning = FALSE, 
+               message = FALSE,
+               cache = FALSE,
+               include = TRUE,
+               results = 'show',
+               error = TRUE,
+               fig.width = 9,
+               fig.height = 6,
+               fig.align = "center",
+               out.width = "80%")
+```
+
+```{r Manipulation_1}
+library(readr)
+library(knitr)#for kable
+library(kableExtra)#for kable
+# extracting data from csv...
+EurostatCrime2017<-read.csv("EurostatCrime2017.csv",header=TRUE,row.names=1)
+```
+
+```{r Manipulation_2}
+dim(EurostatCrime2017) # Display number of rows and columns
+str(EurostatCrime2017) # Display structure of dataframe
+```
+
+```{r Manipulation_3i}
+#Subsituting 0 to column 7 to 10 where value is na
+EurostatCrime2017[,7:10][is.na(EurostatCrime2017[,7:10])]<-0
+#Creating a new column called All_Theft by summing columns 7 to 10 for each row
+EurostatCrime2017$All_Theft <-rowSums(EurostatCrime2017[,7:10])
+```
+```{r Manipulation_3ii}
+EurostatCrimExclude<-EurostatCrime2017[-c(7:10)] #Removing columns 7 to 10 
+```
+
+```{r Manipulation_4}
+#Displaying rows with NA values
+row.names(EurostatCrimExclude[!complete.cases(EurostatCrimExclude),]) 
+```
+
+```{r Manipulation_5}
+#Creating a dataset without NA values
+EurostatCrimeFinal<-(na.omit(EurostatCrimExclude))
+```
+
+```{r Manipulation_6}
+#Providing the observations and variables in the new dataframe
+dim(EurostatCrimeFinal)
+```
+### Analysis
+below are offences along with their ranking and the 3 most common crimes in Ireland in 2017 are theft,Unlawful acts involving controlled drugs or precursors and assault
+```{r Analysis_1}
+apply(-EurostatCrimeFinal[6,],1,rank)
+```
+
+### Country with highest overall record of offences.
+```{r Analysis_2}
+#Creating a new row to gather the sum of all the other rows.
+EurostatCrimeFinal$Ovrall_Crime<-rowSums(EurostatCrimeFinal[,2:8]) 
+#Displaying the country name  which has overall crime 
+row.names(subset(EurostatCrimeFinal,
+EurostatCrimeFinal$Ovrall_Crime==max(EurostatCrimeFinal$Ovrall_Crime))) 
+```
+
+
+### Below are some set of plots that map, count for each offense with the count of total offense for all the reported countries. 
+```{r Creative}
+library(ggplot2)
+library(ggrepel)
+library(cowplot)
+# Intentional_homicide
+
+pl1 <- (ggplot(data = EurostatCrimeFinal, aes(x = EurostatCrimeFinal$Ovrall_Crime,y = EurostatCrimeFinal$Intentional_homicide)) + theme_bw() +xlab("Overall Crime")+ylab("Intentional homicide")+
+  geom_text_repel(aes(label = row.names(EurostatCrimeFinal)),
+                  box.padding = unit(0.45, "lines")) + 
+  geom_point(colour = "green", size = 3))
+
+# Attempted_intentional_homicide
+pl2<- (ggplot(data = EurostatCrimeFinal, aes(x = EurostatCrimeFinal$Ovrall_Crime, y= EurostatCrimeFinal$Attempted_intentional_homicide)) + theme_bw() + xlab("Overall Crime")+ylab("Attempted intentional homicide") +
+  geom_text_repel(aes(label = row.names(EurostatCrimeFinal)),
+                  box.padding = unit(0.45, "lines")) +
+  geom_point(colour = "green", size = 3))
+
+
+# Assault
+pl3<- (ggplot(data = EurostatCrimeFinal, aes(x = EurostatCrimeFinal$Ovrall_Crime, y= EurostatCrimeFinal$Assault)) + theme_bw() +
+  xlab("Overall Crime")+ylab("Assault") + geom_text_repel(aes(label = row.names(EurostatCrimeFinal)),
+                  box.padding = unit(0.45, "lines")) +
+  geom_point(colour = "green", size = 3))
+
+# Kidnapping
+pl4<- (ggplot(data = EurostatCrimeFinal, aes(x = EurostatCrimeFinal$Ovrall_Crime, y= EurostatCrimeFinal$Kidnapping)) + theme_bw() + xlab("Overall Crime")+ylab("Kidnapping") +
+  geom_text_repel(aes(label = row.names(EurostatCrimeFinal)),
+                  box.padding = unit(0.45, "lines")) +
+  geom_point(colour = "green", size = 3))
+
+# grid.arrange(pl1, pl2,pl3, pl4,nrow=2 ,ncol=2)
+
+# Sexual violence
+pl5<- (ggplot(data = EurostatCrimeFinal, aes(x = EurostatCrimeFinal$Ovrall_Crime, y= EurostatCrimeFinal$Sexual.violence)) +  theme_bw() + xlab("Overall Crime")+ylab("Sexual.violence") +
+  geom_text_repel(aes(label = row.names(EurostatCrimeFinal)),
+                  box.padding = unit(0.45, "lines")) +
+  geom_point(colour = "green", size = 3))
+
+# Robbery
+pl6<- (ggplot(data = EurostatCrimeFinal, aes(x = EurostatCrimeFinal$Ovrall_Crime, y= EurostatCrimeFinal$Robbery)) + theme_bw() +
+ xlab("Overall Crime")+ylab("Robbery") + geom_text_repel(aes(label = row.names(EurostatCrimeFinal)),
+                  box.padding = unit(0.45, "lines")) +
+  geom_point(colour = "green", size = 3))
+
+# Unlawful_acts_involving_controlled_drugs_or_precursors
+pl7<- (ggplot(data = EurostatCrimeFinal, aes(x = EurostatCrimeFinal$Ovrall_Crime,y= EurostatCrimeFinal$Unlawful_acts_involving_controlled_drugs_or_precursors)) +  theme_bw() + xlab("Overall Crime")+ylab("Acts involving controlled drugs or precursors") +
+  geom_text_repel(aes(label = row.names(EurostatCrimeFinal)),
+                  box.padding = unit(0.45, "lines")) +
+  geom_point(colour = "green", size = 3))
+
+# All_Theft
+pl8<- (ggplot(data = EurostatCrimeFinal, aes(x = EurostatCrimeFinal$Ovrall_Crime, y = EurostatCrimeFinal$All_Theft )) +  theme_bw() + xlab("Overall Crime")+ylab("All Theft") +
+  geom_text_repel(aes(label = row.names(EurostatCrimeFinal)),
+                  box.padding = unit(0.45, "lines")) +
+  geom_point(colour = "green", size = 3))
+
+plot_grid(pl1, pl2,pl3,pl4,nrow=2,ncol=2,greedy = TRUE,align = 'hv',scale = 1)
+plot_grid(pl5,pl6,pl7,pl8,nrow=2 ,ncol=2,greedy = TRUE,align = 'hv',scale = 1)
+```
+On analysing the given data based on each offence ie:Intentional_homicide, Attempted intentional homicide, Assault, Kidnapping, Sexual violence, Unlawful acts involving controlled drugs or precursors and theft for all the countries.
+
+It is quiet evident that although Switzerland has the highest number of offences, it is among the nations that have very low Intentional homicide,Assault, Kidnaping and relatively moderate cases of Sexual violence, and Attempted intentional homicide . However the number of drug related and theft cases are so paramount that it superseds other nations that have significantly high other offences. 
+  
+
